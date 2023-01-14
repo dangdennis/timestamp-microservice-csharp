@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -19,44 +16,24 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
-
 app.MapGet("/api/{date}", (string date) =>
     {
-        DateTime myDateTime = new DateTime();
-        if (DateTime.TryParse(date, out myDateTime))
+        if (DateTime.TryParse(date, out var myDateTime))
         {
-            return Results.Ok(new DateTimeResponse(
-                myDateTime.ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
-                DateTimeToUnix(myDateTime)));
+            return Results.Ok(
+                new DateTimeResponse(
+                    myDateTime.ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
+                    DateTimeToUnix(myDateTime))
+            );
         }
 
-
-        long unixTimestamp = 0;
-        if (long.TryParse(date, out unixTimestamp))
+        if (long.TryParse(date, out var unixTimestamp))
         {
-            return Results.Ok(new DateTimeResponse(
-                UnixTimeToDateTime(unixTimestamp).ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
-                unixTimestamp));
+            return Results.Ok(
+                new DateTimeResponse(
+                    UnixTimeToDateTime(unixTimestamp).ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
+                    unixTimestamp)
+            );
         }
 
         return Results.BadRequest(new DateTimeResponseError("Invalid Date"));
@@ -66,32 +43,19 @@ app.MapGet("/api/{date}", (string date) =>
 
 app.Run();
 
-
-long DateTimeToUnix(DateTime MyDateTime)
+long DateTimeToUnix(DateTime dt)
 {
-    app.Logger.LogInformation($"myDateTime {MyDateTime}");
-    TimeSpan timeSpan = MyDateTime - new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-    app.Logger.LogInformation($"timeSpan {timeSpan}");
-
-    return (long)timeSpan.TotalSeconds;
+    TimeSpan timeSpan = dt - new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+    return (long)timeSpan.TotalMilliseconds;
 }
 
-DateTime UnixTimeToDateTime(long unixtime)
+DateTime UnixTimeToDateTime(long unixTime)
 {
-    System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-    dtDateTime = dtDateTime.AddMilliseconds(unixtime).ToLocalTime();
+    DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+    dtDateTime = dtDateTime.AddMilliseconds(unixTime).ToLocalTime();
     return dtDateTime;
 }
 
-record DateTimeResponseError(string error)
-{
-}
+record struct DateTimeResponseError(string error);
 
-record DateTimeResponse(string utc, long unix)
-{
-}
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+record struct DateTimeResponse(string utc, long unix);
