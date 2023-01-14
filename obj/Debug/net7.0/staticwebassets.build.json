@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "utnKIAmPGDv6Tr8taZ4LZszvcLuqli99hAen0WgQ9Pc=",
+  "Source": "TimestampMicroservice",
+  "BasePath": "_content/TimestampMicroservice",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
