@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -23,17 +20,20 @@ app.MapGet("/api/{date}", (string date) =>
     {
         if (DateTime.TryParse(date, out var myDateTime))
         {
-            return Results.Ok(new DateTimeResponse(
-                myDateTime.ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
-                DateTimeToUnix(myDateTime)));
+            return Results.Ok(
+                new DateTimeResponse(
+                    myDateTime.ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
+                    DateTimeToUnix(myDateTime))
+            );
         }
-
 
         if (long.TryParse(date, out var unixTimestamp))
         {
-            return Results.Ok(new DateTimeResponse(
-                UnixTimeToDateTime(unixTimestamp).ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
-                unixTimestamp));
+            return Results.Ok(
+                new DateTimeResponse(
+                    UnixTimeToDateTime(unixTimestamp).ToUniversalTime().ToString("ddd, dd MMM yyy HH':'mm':'ss 'GMT'"),
+                    unixTimestamp)
+            );
         }
 
         return Results.BadRequest(new DateTimeResponseError("Invalid Date"));
@@ -43,10 +43,10 @@ app.MapGet("/api/{date}", (string date) =>
 
 app.Run();
 
-long DateTimeToUnix(DateTime myDateTime)
+long DateTimeToUnix(DateTime dt)
 {
-    TimeSpan timeSpan = myDateTime - new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-    return (long)timeSpan.TotalSeconds;
+    TimeSpan timeSpan = dt - new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
+    return (long)timeSpan.TotalMilliseconds;
 }
 
 DateTime UnixTimeToDateTime(long unixTime)
